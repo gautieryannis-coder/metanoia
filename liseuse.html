@@ -482,7 +482,7 @@ body.is-listening .read { padding-bottom: 200px; }
     $('#btnResume').hidden = !has;
     $('#btnStart').textContent = has ? 'Commencer au début' : 'Commencer la lecture';
     $('#btnStart').className = has ? 'btn btn--line' : 'btn btn--light';
-    if (has) $('#resumeWhere').textContent = label(CH[i]) + ' · ' + CH[i].title + ' · ' + Math.round(Math.min(1, pos.ratio) * 100) + ' %';
+    if (has) $('#resumeWhere').textContent = label(CH[i]) + ' · ' + Math.round(Math.min(1, pos.ratio) * 100) + ' % lu';
   };
   $('#btnStart').addEventListener('click', () => go(0, 0));
   $('#btnResume').addEventListener('click', () => {
