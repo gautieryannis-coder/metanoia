@@ -1,795 +1,613 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="jour">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="robots" content="noindex, nofollow" />
-<title>Liseuse — METANOIA · Yannis Gautier</title>
-<meta name="description" content="Liseuse en ligne du livre METANOIA — lecture confortable, sommaire, réglages typographiques, trois thèmes de lecture." />
+<title>Liseuse — MÉTANOÏA · Yannis Gautier</title>
+<meta name="description" content="Lire MÉTANOÏA de Yannis Gautier en ligne : avant-propos et dix chapitres, sommaire, reprise de lecture, écoute de chaque chapitre." />
 <meta name="author" content="Yannis Gautier" />
+<meta name="theme-color" content="#0f1011" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,200;0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,200;1,9..144,300;1,9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400;1,7..72,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B0E10'/%3E%3Crect x='4' y='4' width='24' height='24' fill='none' stroke='%2319D3D1' stroke-width='2'/%3E%3Ctext x='50%25' y='63%25' font-family='sans-serif' font-weight='900' font-size='16' fill='%2319D3D1' text-anchor='middle'%3EM%3C/text%3E%3C/svg%3E" />
 <style>
 /* =============================================================
-   LISEUSE METANOIA — lecteur immersif du livre
+   LISEUSE MÉTANOÏA — s'ouvre sur la couverture, se lit comme un livre
+   Texte : data/chapitres.js (issu du BAT, outils/bat_vers_json.py)
    ============================================================= */
 :root {
-  --ink:        #0B0E10;
-  --ink-2:      #0E1214;
-  --ink-3:      #14181B;
-  --ink-line:   #1F2528;
-  --paper:      #F4F1E9;
-  --paper-hi:   #FFFDF7;
-  --paper-line: #E4DFD1;
-  --paper-mute: #9A968B;
-  --cream:      #E9E1CE;
-  --cream-line: #D8CFB5;
-  --cyan:       #19D3D1;
-  --cyan-deep:  #0AA5A7;
-  --grey:       #657077;
-  --grey-2:     #8B959B;
-  --sans:    'Inter', system-ui, sans-serif;
-  --display: 'Inter Tight', 'Inter', system-ui, sans-serif;
-  --serif:   'Fraunces', 'Times New Roman', serif;
-  --mono:    'JetBrains Mono', ui-monospace, monospace;
-  --ease:  cubic-bezier(.2,.7,.15,1);
-  --reader-fs: 20px;
-  --reader-lh: 1.75;
-  --reader-mw: 680px;
+  --fs: 19px;
+  --serif: 'Literata', Georgia, 'Times New Roman', serif;
+  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --stage: #0f1011;
+  --ease: cubic-bezier(.2,.7,.15,1);
 }
+html[data-theme="jour"]  { --bg: #fbf8f2; --fg: #1d1c1a; --mute: #6f6a62; --line: #e6e0d4; --accent: #0a8789; --panel: #ffffff; --shadow: rgba(29,28,26,.12); }
+html[data-theme="sepia"] { --bg: #f4eadb; --fg: #3a2e24; --mute: #7a6a58; --line: #e0d0b8; --accent: #8a5a2b; --panel: #fbf4e8; --shadow: rgba(58,46,36,.14); }
+html[data-theme="nuit"]  { --bg: #121416; --fg: #d9d5cb; --mute: #8d9092; --line: #25292c; --accent: #4cc9c6; --panel: #1b1e21; --shadow: rgba(0,0,0,.5); }
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-body {
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--serif);
-  font-weight: 400;
-  transition: background .4s var(--ease), color .4s var(--ease);
-  overflow-x: hidden;
-}
-a { color: inherit; text-decoration: none; }
-button { font: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; }
-::selection { background: var(--cyan); color: var(--ink); }
-:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); transition: background .3s, color .3s; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+[hidden] { display: none !important; }
+.icon { width: 20px; height: 20px; display: block; }
 
-/* THEMES ---------------------------------------------------- */
-body.theme-paper { background: var(--paper); color: var(--ink); --line: var(--paper-line); --mute: var(--paper-mute); }
-body.theme-cream { background: var(--cream); color: #1A1A16; --line: var(--cream-line); --mute: #857D63; }
-body.theme-night { background: var(--ink); color: #E7E4DA; --line: var(--ink-line); --mute: #7C8489; }
-body.theme-night ::selection { background: var(--cyan); color: var(--ink); }
+/* ---------- Vues ---------- */
+body[data-view="cover"] .read-only { display: none !important; }
+body[data-view="read"] .cover { display: none; }
 
-/* TOPBAR ---------------------------------------------------- */
-.topbar {
-  position: fixed;
-  inset: 0 0 auto 0;
-  z-index: 60;
-  padding: 18px clamp(18px, 4vw, 40px);
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 20px;
-  background: transparent;
-  transition: background .3s var(--ease), backdrop-filter .3s var(--ease), border-color .3s var(--ease);
+/* =================== COUVERTURE =================== */
+.cover {
+  min-height: 100vh; min-height: 100dvh;
+  background: radial-gradient(ellipse 70% 60% at 50% 35%, #1d2022 0%, var(--stage) 70%);
+  color: #ece8df;
+  display: flex; flex-direction: column;
+  padding: max(18px, env(safe-area-inset-top)) 22px max(28px, env(safe-area-inset-bottom));
 }
-.topbar.is-scrolled {
-  background: color-mix(in oklab, currentColor 0%, transparent);
+.cover__top { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.cover__top a, .cover__top button { color: #b9b4aa; text-decoration: none; padding: 8px 4px; }
+.cover__top a:hover, .cover__top button:hover { color: #fff; }
+.cover__main {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: clamp(28px, 6vw, 88px); padding: 24px 0; flex-wrap: wrap;
 }
-body.theme-paper .topbar.is-scrolled { background: rgba(244,241,233,.86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--paper-line); }
-body.theme-cream .topbar.is-scrolled { background: rgba(233,225,206,.86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--cream-line); }
-body.theme-night .topbar.is-scrolled { background: rgba(11,14,16,.86); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--ink-line); }
-
-.topbar__left, .topbar__right { display: flex; align-items: center; gap: 6px; }
-.topbar__brand {
-  display: flex; align-items: center; gap: 12px;
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: 13px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-}
-.topbar__brand .mark {
-  width: 28px; height: 28px;
-  border: 1.5px solid var(--cyan);
-  color: var(--cyan);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 900;
-  font-size: 13px;
-  font-family: var(--display);
-}
-.tb-btn {
-  width: 40px; height: 40px;
-  border: 1px solid var(--line);
-  display: inline-flex; align-items: center; justify-content: center;
-  transition: border-color .2s, background .2s, color .2s;
-}
-.tb-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-.tb-btn.is-active { background: var(--cyan); color: var(--ink); border-color: var(--cyan); }
-.tb-btn svg { width: 18px; height: 18px; }
-
-.progress-bar {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 2px;
-  background: var(--line);
+.cover__book {
+  width: min(78vw, 360px);
+  aspect-ratio: 1070 / 1470;
+  border-radius: 3px 6px 6px 3px;
   overflow: hidden;
+  box-shadow: 0 30px 70px rgba(0,0,0,.55), 0 4px 14px rgba(0,0,0,.4);
+  position: relative;
 }
-.progress-bar::after {
-  content: "";
-  display: block;
-  height: 100%;
-  width: var(--pg, 0%);
-  background: var(--cyan);
-  transition: width .2s;
+.cover__book::after { /* dos du livre */
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 10px;
+  background: linear-gradient(90deg, rgba(255,255,255,.10), rgba(0,0,0,.25) 60%, transparent);
+}
+.cover__book img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cover__text { max-width: 380px; display: flex; flex-direction: column; gap: 22px; }
+.cover__author { font-size: 12px; letter-spacing: .28em; text-transform: uppercase; color: #9d988e; }
+.cover__title { font-family: var(--serif); font-weight: 500; font-size: clamp(38px, 6vw, 54px); line-height: 1; letter-spacing: .01em; }
+.cover__desc { font-family: var(--serif); font-size: 17px; line-height: 1.6; color: #c9c4ba; }
+.cover__actions { display: flex; flex-direction: column; gap: 10px; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 52px; padding: 0 22px; border-radius: 999px;
+  font-weight: 600; font-size: 15px; letter-spacing: .01em; text-decoration: none;
+  transition: background .2s, color .2s, border-color .2s, transform .2s;
+}
+.btn--light { background: #f1ede4; color: #141414; }
+.btn--light:hover { background: #fff; }
+.btn--line { border: 1px solid #45484b; color: #e4e0d7; }
+.btn--line:hover { border-color: #8b8e90; }
+.btn small { display: block; font-weight: 400; font-size: 12.5px; opacity: .7; }
+.btn__stack { display: flex; flex-direction: column; align-items: center; line-height: 1.25; }
+.cover__links { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 14px; color: #a7a298; padding-top: 4px; }
+.cover__links a, .cover__links button { color: #cfcac0; text-decoration: none; border-bottom: 1px solid #45484b; padding-bottom: 2px; }
+.cover__links a:hover, .cover__links button:hover { color: #fff; border-color: #fff; }
+@media (max-width: 760px) {
+  .cover__main { flex-direction: column; gap: 30px; }
+  .cover__text { align-items: center; text-align: center; }
+  .cover__title { display: none; } /* le titre est déjà sur la couverture */
+  .cover__actions { width: 100%; max-width: 360px; }
+  .cover__links { justify-content: center; }
 }
 
-/* TOC drawer ------------------------------------------------ */
-.toc {
-  position: fixed;
-  top: 0; bottom: 0; left: 0;
-  width: 380px;
-  max-width: 92vw;
-  background: var(--ink);
-  color: #E7E4DA;
-  z-index: 80;
-  transform: translateX(-100%);
-  transition: transform .4s var(--ease);
-  overflow-y: auto;
-  padding: 90px 32px 40px;
-  border-right: 1px solid var(--ink-line);
-}
-.toc.is-open { transform: translateX(0); }
-.toc__close {
-  position: absolute; top: 22px; right: 22px;
-  width: 36px; height: 36px;
-  border: 1px solid var(--ink-line);
-  color: #E7E4DA;
-}
-.toc__title {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.24em;
-  color: var(--cyan);
-  text-transform: uppercase;
-  margin-bottom: 22px;
-}
-.toc__list { list-style: none; display: flex; flex-direction: column; }
-.toc__list li a {
-  display: block;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--ink-line);
-  display: grid;
-  grid-template-columns: 40px 1fr auto;
-  align-items: baseline;
-  gap: 14px;
-  transition: color .2s;
-}
-.toc__list li a:hover, .toc__list li a.is-current { color: var(--cyan); }
-.toc__list .n {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--cyan);
-  text-transform: uppercase;
-}
-.toc__list .t {
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: 14.5px;
-  letter-spacing: -0.005em;
-  color: #E7E4DA;
-}
-.toc__list li a.is-current .t { color: var(--cyan); }
-.toc__list .p {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
-  color: var(--grey-2);
-  text-transform: uppercase;
-}
-.toc__foot {
-  margin-top: 26px;
-  padding-top: 20px;
-  border-top: 1px solid var(--ink-line);
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
-  color: var(--grey-2);
-  text-transform: uppercase;
-  display: flex; flex-direction: column; gap: 12px;
-}
-.toc__foot a { color: var(--cyan); border-bottom: 1px solid var(--cyan); padding-bottom: 2px; align-self: flex-start; }
-
-/* Panel réglages ------------------------------------------- */
-.panel-settings {
-  position: fixed;
-  top: 72px; right: 20px;
-  z-index: 70;
-  width: 320px;
-  background: var(--paper-hi);
-  border: 1px solid var(--paper-line);
-  padding: 22px;
-  transform: translateY(-10px) scale(.98);
-  transform-origin: top right;
-  opacity: 0;
-  pointer-events: none;
-  transition: transform .3s var(--ease), opacity .3s var(--ease);
-  box-shadow: 0 20px 40px rgba(11,14,16,.08);
-}
-body.theme-cream .panel-settings { background: var(--paper-hi); border-color: var(--cream-line); }
-body.theme-night .panel-settings { background: var(--ink-2); border-color: var(--ink-line); color: #E7E4DA; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
-.panel-settings.is-open { transform: none; opacity: 1; pointer-events: auto; }
-.ps__title {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.24em;
-  color: var(--mute);
-  text-transform: uppercase;
-  margin-bottom: 18px;
-}
-.ps__row {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 14px;
-  align-items: center;
-  padding: 10px 0;
-  border-top: 1px solid var(--line);
-  font-family: var(--sans);
-  font-size: 13px;
-}
-.ps__row:first-of-type { border-top: 0; }
-.ps__row > label {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
-  color: var(--mute);
-  text-transform: uppercase;
-}
-.ps__group { display: flex; gap: 6px; flex-wrap: wrap; }
-.ps__btn {
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  font-family: var(--mono);
-  font-size: 11px;
-  color: currentColor;
-  transition: border-color .2s, background .2s, color .2s;
-}
-.ps__btn.is-active { background: var(--cyan); color: var(--ink); border-color: var(--cyan); }
-.ps__btn:hover { border-color: var(--cyan); }
-.ps__swatch {
-  width: 28px; height: 28px;
-  border: 1px solid var(--line);
-  display: inline-flex; align-items: center; justify-content: center;
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  color: transparent;
-  transition: transform .2s, border-color .2s;
-}
-.ps__swatch:hover { transform: scale(1.08); }
-.ps__swatch.is-active { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan) inset; }
-.ps__swatch--paper { background: var(--paper); }
-.ps__swatch--cream { background: var(--cream); }
-.ps__swatch--night { background: var(--ink); }
-
-/* READER --------------------------------------------------- */
-.reader {
-  padding: 130px clamp(20px, 5vw, 60px) 100px;
-  max-width: calc(var(--reader-mw) + 120px);
-  margin: 0 auto;
-}
-.reader__meta {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.28em;
-  color: var(--mute);
-  text-transform: uppercase;
-  padding-bottom: 14px;
+/* =================== BARRE DE LECTURE =================== */
+.bar {
+  position: fixed; inset: 0 0 auto 0; z-index: 40;
+  height: calc(56px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 10px 0;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px;
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
-  display: flex; justify-content: space-between; align-items: baseline;
-  gap: 20px; flex-wrap: wrap;
+  transition: transform .35s var(--ease), background .3s;
 }
-.reader__phase { color: var(--cyan-deep); }
-body.theme-night .reader__phase { color: var(--cyan); }
+.bar.is-hidden { transform: translateY(-100%); }
+.bar__group { display: flex; align-items: center; gap: 2px; }
+.bar__btn { width: 44px; height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: var(--fg); }
+.bar__btn:hover, .bar__btn.is-on { background: var(--line); }
+.bar__btn--text { width: auto; padding: 0 12px; font-family: var(--serif); font-size: 18px; }
+.bar__where { text-align: center; font-size: 13px; color: var(--mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar__where b { color: var(--fg); font-weight: 600; }
+.bar__progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; }
+.bar__progress span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .15s linear; }
 
-.reader__ornament {
-  margin: 40px auto 20px;
-  width: 40px; height: 40px;
-  border: 1px solid var(--line);
-  transform: rotate(45deg);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 300;
+/* Réglages */
+.pop {
+  position: fixed; z-index: 50; top: calc(62px + env(safe-area-inset-top)); right: 12px;
+  width: min(320px, calc(100vw - 24px));
+  background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 18px 50px var(--shadow); padding: 16px;
+  display: flex; flex-direction: column; gap: 16px;
 }
-.reader__ornament::before { content: "§"; transform: rotate(-45deg); color: var(--cyan-deep); font-size: 20px; }
-body.theme-night .reader__ornament::before { color: var(--cyan); }
+.pop__row { display: flex; flex-direction: column; gap: 8px; }
+.pop__label { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
+.seg button { min-height: 42px; border-radius: 10px; border: 1px solid var(--line); font-size: 14px; }
+.seg button.is-on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.seg .sw-jour { background: #fbf8f2; color: #1d1c1a; }
+.seg .sw-sepia { background: #f4eadb; color: #3a2e24; }
+.seg .sw-nuit { background: #121416; color: #d9d5cb; }
+.size-a { font-family: var(--serif); }
 
-.reader__kicker {
-  margin-top: 40px;
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.28em;
-  color: var(--cyan-deep);
-  text-transform: uppercase;
-  text-align: center;
-}
-body.theme-night .reader__kicker { color: var(--cyan); }
+/* =================== TEXTE =================== */
+.read { padding: calc(56px + env(safe-area-inset-top)) 22px 140px; }
+.page { max-width: 33em; margin: 0 auto; font-size: var(--fs); }
+.chap-head { text-align: center; padding: clamp(56px, 14vh, 140px) 0 clamp(36px, 7vh, 64px); }
+.chap-head__mvt { font-size: 11.5px; letter-spacing: .22em; text-transform: uppercase; color: var(--mute); margin-bottom: 22px; font-family: var(--sans); }
+.chap-head__num { font-family: var(--serif); font-style: italic; font-size: 1.05em; color: var(--accent); margin-bottom: 14px; }
+.chap-head__title { font-family: var(--serif); font-weight: 600; font-size: clamp(1.75em, 6.5vw, 2.35em); line-height: 1.15; letter-spacing: -.005em; text-wrap: balance; }
+.chap-head__sub { font-family: var(--serif); font-style: italic; font-size: 1em; line-height: 1.5; color: var(--mute); margin: 16px auto 0; max-width: 24em; text-wrap: balance; }
+.chap-head__orn { margin: 30px auto 0; width: 40px; height: 1px; background: var(--line); position: relative; }
+.chap-head__time { margin-top: 18px; font-size: 12.5px; color: var(--mute); font-family: var(--sans); }
 
-.reader__title {
-  margin-top: 14px;
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: clamp(38px, 5.2vw, 68px);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  text-align: center;
+.text { font-family: var(--serif); font-size: 1em; line-height: 1.68; hyphens: auto; -webkit-hyphens: auto; text-align: justify; overflow-wrap: break-word; }
+.text p { text-indent: 1.4em; }
+.text p.first, .text p.impact, .text p.ex-q, .text p.ex-a, .text p.step { text-indent: 0; }
+.text h3 {
+  font-family: var(--sans); font-weight: 600; font-size: .7em; line-height: 1.5;
+  letter-spacing: .14em; text-transform: uppercase; text-align: left;
+  color: var(--fg); margin: 3.2em 0 1.4em;
 }
-.reader__title em {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 200;
-  color: var(--cyan-deep);
-  letter-spacing: -0.02em;
+.text h4 { font-family: var(--sans); font-weight: 600; font-size: .68em; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin: 2.2em 0 1em; text-align: left; }
+.text .impact { text-align: center; font-weight: 600; font-size: 1.12em; line-height: 1.45; margin: 1.6em auto; max-width: 24em; text-wrap: balance; hyphens: manual; }
+.text blockquote { margin: 1.6em 0 1.6em 1.2em; padding-left: 1.1em; border-left: 2px solid var(--line); text-align: left; hyphens: manual; color: var(--fg); }
+.text blockquote em { font-style: italic; }
+.text .step { margin: 1em 0; padding-left: 1em; border-left: 2px solid var(--accent); text-align: left; }
+.text .step strong { font-weight: 600; }
+.text .exercice {
+  margin: 3.4em 0 1.4em; padding-top: 1.6em; border-top: 1px solid var(--line);
+  text-align: center; font-family: var(--sans); font-size: .7em; font-weight: 600; letter-spacing: .22em; color: var(--accent);
 }
-body.theme-night .reader__title em { color: var(--cyan); }
+.text .ex-q { font-weight: 600; margin: 1.5em 0 .5em; text-align: left; hyphens: manual; }
+.text .ex-a { font-size: .95em; margin: .45em 0; text-align: left; hyphens: manual; color: var(--fg); }
+.text .ligne { height: 1.9em; border-bottom: 1px dotted var(--mute); opacity: .7; }
+.text .ligne-inline { display: inline-block; width: 100%; height: 1.2em; border-bottom: 1px dotted var(--mute); opacity: .7; vertical-align: bottom; }
+.text p + h3, .text p + h4 { margin-top: 3em; }
 
-.reader__subtitle {
-  margin: 22px auto 0;
-  max-width: var(--reader-mw);
-  text-align: center;
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 300;
-  font-size: clamp(17px, 1.4vw, 21px);
-  line-height: 1.5;
-  color: var(--mute);
+.chap-end { margin: 4.5em 0 0; text-align: center; font-family: var(--sans); }
+.chap-end__orn { font-family: var(--serif); letter-spacing: .6em; color: var(--mute); margin-bottom: 2.2em; }
+.next {
+  display: block; width: 100%; text-align: left; padding: 22px 22px; border: 1px solid var(--line); border-radius: 16px;
+  background: var(--panel); transition: border-color .2s, transform .2s;
 }
+.next:hover { border-color: var(--accent); }
+.next__k { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.next__t { display: block; margin-top: 6px; font-family: var(--serif); font-weight: 600; font-size: 21px; line-height: 1.25; }
+.next__s { display: block; margin-top: 4px; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--mute); }
+.end-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 22px; font-size: 14px; }
+.end-links button, .end-links a { color: var(--mute); text-decoration: underline; text-underline-offset: 3px; }
+.end-links button:hover, .end-links a:hover { color: var(--fg); }
 
-.reader__body {
-  max-width: var(--reader-mw);
-  margin: 60px auto 0;
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: var(--reader-fs);
-  line-height: var(--reader-lh);
-  letter-spacing: 0.005em;
+/* =================== SOMMAIRE =================== */
+.toc-back { position: fixed; inset: 0; z-index: 60; background: rgba(8,9,10,.45); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.toc-back.is-open { opacity: 1; pointer-events: auto; }
+.toc {
+  position: fixed; z-index: 70; top: 0; bottom: 0; left: 0; width: min(440px, 100vw);
+  background: var(--panel); color: var(--fg); box-shadow: 20px 0 60px var(--shadow);
+  transform: translateX(-102%); transition: transform .4s var(--ease);
+  display: flex; flex-direction: column;
 }
-.reader__body > p:first-of-type::first-letter {
-  font-family: var(--display);
-  font-weight: 900;
-  font-size: 3.6em;
-  line-height: 0.9;
-  float: left;
-  margin: 0.06em 0.12em 0 0;
-  color: var(--cyan-deep);
-  letter-spacing: -0.04em;
-}
-body.theme-night .reader__body > p:first-of-type::first-letter { color: var(--cyan); }
-.reader__body p + p { margin-top: 1.15em; text-indent: 1.8em; }
-.reader__body > p:first-of-type + p { text-indent: 0; }
+.toc.is-open { transform: none; }
+.toc__head { display: flex; align-items: center; justify-content: space-between; padding: calc(14px + env(safe-area-inset-top)) 14px 10px 24px; border-bottom: 1px solid var(--line); }
+.toc__head h2 { font-family: var(--serif); font-weight: 600; font-size: 22px; }
+.toc__list { overflow-y: auto; padding: 8px 0 calc(24px + env(safe-area-inset-bottom)); list-style: none; }
+.toc__mvt { padding: 22px 24px 8px; font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--mute); }
+.toc__mvt b { display: block; margin-top: 4px; font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: 0; text-transform: none; font-size: 15px; color: var(--fg); }
+.toc__item { display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; width: 100%; text-align: left; padding: 13px 20px 13px 24px; align-items: baseline; }
+.toc__item:hover { background: var(--line); }
+.toc__item.is-current { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.toc__n { font-family: var(--serif); font-style: italic; color: var(--accent); }
+.toc__t { font-family: var(--serif); font-size: 17px; line-height: 1.3; }
+.toc__s { display: block; margin-top: 3px; font-size: 13px; line-height: 1.4; color: var(--mute); }
+.toc__m { font-size: 12px; color: var(--mute); white-space: nowrap; }
 
-.reader__body h3 {
-  margin: 2.4em 0 0.8em;
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: 1.4em;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+/* =================== ÉCOUTE =================== */
+.listen {
+  position: fixed; z-index: 45; left: 0; right: 0; bottom: 0;
+  padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  background: var(--panel); border-top: 1px solid var(--line); box-shadow: 0 -10px 40px var(--shadow);
+  display: grid; grid-template-columns: auto 1fr auto auto auto; gap: 10px; align-items: center;
 }
-.reader__body blockquote {
-  margin: 2em 0;
-  padding: 20px 0 20px 26px;
-  border-left: 3px solid var(--cyan);
-  font-style: italic;
-  font-weight: 300;
-  font-size: 1.15em;
-  line-height: 1.55;
-  color: var(--mute);
-}
-body.theme-night .reader__body blockquote { color: #C7C3B4; }
-.reader__body em { font-style: italic; }
-.reader__body strong { font-weight: 600; }
+.listen__prog { position: absolute; left: 0; right: 0; top: -1px; height: 4px; cursor: pointer; background: var(--line); }
+.listen__prog span { display: block; height: 100%; width: 0; background: var(--accent); }
+.listen__play { width: 50px; height: 50px; border-radius: 50%; background: var(--fg); color: var(--bg); display: inline-flex; align-items: center; justify-content: center; }
+.listen__play .icon { width: 22px; height: 22px; }
+.listen__info { min-width: 0; }
+.listen__k { font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.listen__t { font-family: var(--serif); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.listen__time { font-size: 12.5px; color: var(--mute); font-variant-numeric: tabular-nums; }
+.listen__skip { width: 40px; height: 40px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+.listen__skip:hover { background: var(--line); }
+body.is-listening .read { padding-bottom: 200px; }
+@media (max-width: 520px) { .listen__time { display: none; } }
 
-.reader__sep {
-  margin: 3.5em auto;
-  width: 60px;
-  text-align: center;
-  color: var(--mute);
-  font-family: var(--serif);
-  font-style: italic;
-  letter-spacing: 0.8em;
+@media (max-width: 520px) {
+  :root { --fs: 18px; }
+  .read { padding-left: 20px; padding-right: 20px; }
+  .text { line-height: 1.64; }
 }
-.reader__sep::before { content: "· · ·"; }
-
-.reader__footnav {
-  margin-top: 80px;
-  padding-top: 30px;
-  border-top: 1px solid var(--line);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-.reader__nav-btn {
-  padding: 18px 22px;
-  border: 1px solid var(--line);
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  transition: border-color .2s, background .2s, color .2s;
-  display: flex; align-items: center; gap: 14px;
-}
-.reader__nav-btn:hover { border-color: var(--cyan); color: var(--cyan); }
-.reader__nav-btn small {
-  display: block;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.2em;
-  color: var(--mute);
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.reader__nav-btn.next { text-align: right; justify-content: flex-end; }
-.reader__nav-btn.prev { text-align: left; }
-.reader__nav-btn.disabled { opacity: .3; pointer-events: none; }
-
-.reader__notice {
-  max-width: var(--reader-mw);
-  margin: 40px auto 0;
-  padding: 14px 18px;
-  background: rgba(232,138,62,.10);
-  border-left: 3px solid #E88A3E;
-  font-family: var(--mono);
-  font-size: 11.5px;
-  letter-spacing: 0.14em;
-  color: #B26325;
-  text-transform: uppercase;
-}
-body.theme-night .reader__notice { color: #E88A3E; background: rgba(232,138,62,.14); }
-
-/* Overlay when TOC open */
-.toc-backdrop {
-  position: fixed; inset: 0;
-  background: rgba(11,14,16,.4);
-  z-index: 75;
-  opacity: 0; pointer-events: none;
-  transition: opacity .3s;
-}
-.toc-backdrop.is-open { opacity: 1; pointer-events: auto; }
-
-@media (max-width: 720px) {
-  :root { --reader-fs: 18px; --reader-lh: 1.7; }
-  .topbar__brand { font-size: 11px; letter-spacing: 0.18em; }
-  .topbar__brand span:last-child { display: none; }
-  .reader { padding-top: 100px; padding-bottom: 60px; }
-  .reader__footnav { grid-template-columns: 1fr; }
-  .panel-settings { right: 12px; left: 12px; width: auto; }
-}
-@media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-}
-</style>
-<style>
-/* === Texte du livre : data/chapitres.json, issu du BAT (outils/bat_vers_json.py) === */
-.reader__body { overflow-wrap: break-word; } /* les lignes pointillées à compléter ne doivent jamais dépasser l'écran */
-.reader__body h3 { font-size: 1.1em; line-height: 1.3; letter-spacing: 0.02em; }
-.reader__body h4 { margin: 1.9em 0 0.6em; font-family: var(--display); font-weight: 700; font-size: 1em; line-height: 1.3; color: var(--cyan-deep); }
-body.theme-night .reader__body h4 { color: var(--cyan); }
-.reader__body p[class] { text-indent: 0; }
-.reader__body .impact { margin: 1.6em 0; font-family: var(--display); font-weight: 800; font-size: 1.12em; line-height: 1.35; letter-spacing: -0.005em; }
-.reader__body .step { margin: 1.1em 0; padding-left: 1em; border-left: 2px solid var(--line); }
-.reader__body .ex-title { margin: 3.2em 0 1em; padding-top: 1.3em; border-top: 1px solid var(--line); font-family: var(--mono); font-size: 0.62em; letter-spacing: 0.24em; text-transform: uppercase; color: var(--cyan-deep); }
-body.theme-night .reader__body .ex-title { color: var(--cyan); }
-.reader__body .ex-q { margin: 1.5em 0 0.4em; font-family: var(--sans); font-weight: 600; font-size: 0.9em; line-height: 1.5; }
-.reader__body .ex-a { margin: 0.35em 0; font-family: var(--sans); font-size: 0.86em; line-height: 1.6; color: var(--mute); overflow-wrap: anywhere; }
-.reader__subtitle[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
 </style>
 </head>
-<body class="theme-paper">
+<body data-view="cover">
 
-<!-- ==================== TOPBAR ==================== -->
-<header class="topbar" id="topbar">
-  <div class="topbar__left">
-    <button class="tb-btn" id="tocBtn" aria-label="Ouvrir le sommaire" aria-expanded="false">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-    </button>
-    <a href="index.html" class="topbar__brand" style="margin-left:14px;">
-      <span class="mark">M</span>
-      <span>METANOIA · Liseuse</span>
-    </a>
+<!-- =================== COUVERTURE =================== -->
+<section class="cover" aria-label="Couverture du livre">
+  <div class="cover__top">
+    <a href="index.html">← Retour au site</a>
+    <button type="button" data-open-toc>Sommaire</button>
   </div>
-  <div class="topbar__right">
-    <button class="tb-btn" id="settingsBtn" aria-label="Réglages de lecture" aria-expanded="false">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h10M18 7h2M4 12h2M10 12h10M4 17h14M20 17h0"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="17" r="2"/></svg>
-    </button>
-    <a href="livre-audio.html" class="tb-btn" aria-label="Écouter le livre audio" title="Écouter le livre audio">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8a5 5 0 010 8"/></svg>
-    </a>
-    <a href="assets/metanoia-livre.pdf" class="tb-btn" aria-label="Télécharger le livre PDF" download title="Télécharger en PDF">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v14m0 0l-5-5m5 5l5-5M5 21h14"/></svg>
-    </a>
-    <a href="index.html" class="tb-btn" aria-label="Retour au site" title="Retour au site">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </a>
+  <div class="cover__main">
+    <div class="cover__book">
+      <img src="assets/img/metanoia-cover.jpg" width="1070" height="1470" alt="Couverture du livre MÉTANOÏA de Yannis Gautier" />
+    </div>
+    <div class="cover__text">
+      <div class="cover__author">Yannis Gautier</div>
+      <h1 class="cover__title">MÉTANOÏA</h1>
+      <p class="cover__desc" id="coverDesc">Avant-propos et dix chapitres. Lis à ton rythme : la page où tu t’arrêtes est gardée sur cet appareil.</p>
+      <div class="cover__actions">
+        <button class="btn btn--light" type="button" id="btnResume" hidden>
+          <span class="btn__stack">Reprendre la lecture<small id="resumeWhere"></small></span>
+        </button>
+        <button class="btn btn--light" type="button" id="btnStart">Commencer la lecture</button>
+      </div>
+      <div class="cover__links">
+        <button type="button" data-open-toc>Sommaire</button>
+        <a href="livre-audio.html">Livre audio</a>
+        <a href="assets/metanoia-livre.pdf" download>Télécharger le PDF</a>
+      </div>
+    </div>
   </div>
-  <div class="progress-bar" aria-hidden="true"></div>
+</section>
+
+<!-- =================== BARRE DE LECTURE =================== -->
+<header class="bar read-only" id="bar">
+  <div class="bar__group">
+    <button class="bar__btn" type="button" id="btnCover" aria-label="Revenir à la couverture" title="Couverture">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 4.5h10.5a3 3 0 013 3V20H8a3 3 0 01-3-3V4.5z"/><path d="M5 17a3 3 0 013-3h10.5"/></svg>
+    </button>
+    <button class="bar__btn" type="button" data-open-toc aria-label="Sommaire" title="Sommaire">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 6h16M4 12h16M4 18h11"/></svg>
+    </button>
+  </div>
+  <div class="bar__where" id="barWhere"></div>
+  <div class="bar__group">
+    <button class="bar__btn bar__btn--text" type="button" id="btnSettings" aria-label="Réglages de lecture" aria-expanded="false" title="Taille et fond">Aa</button>
+    <button class="bar__btn" type="button" id="btnListen" aria-label="Écouter ce chapitre" title="Écouter ce chapitre">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 15v-3a8 8 0 0116 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.5"/><rect x="16.5" y="14" width="4" height="6" rx="1.5"/></svg>
+    </button>
+  </div>
+  <div class="bar__progress" aria-hidden="true"><span id="barProg"></span></div>
 </header>
 
-<!-- ==================== SETTINGS PANEL ==================== -->
-<div class="panel-settings" id="settingsPanel" role="dialog" aria-label="Réglages de lecture">
-  <div class="ps__title">Réglages de lecture</div>
-  <div class="ps__row">
-    <label>Thème</label>
-    <div class="ps__group">
-      <button class="ps__swatch ps__swatch--paper is-active" data-theme="paper" aria-label="Thème papier">papier</button>
-      <button class="ps__swatch ps__swatch--cream" data-theme="cream" aria-label="Thème crème">crème</button>
-      <button class="ps__swatch ps__swatch--night" data-theme="night" aria-label="Thème nuit">nuit</button>
+<div class="pop read-only" id="pop" role="dialog" aria-label="Réglages de lecture" hidden>
+  <div class="pop__row">
+    <div class="pop__label">Taille du texte</div>
+    <div class="seg">
+      <button type="button" id="sizeDown" aria-label="Texte plus petit"><span class="size-a" style="font-size:14px">A</span></button>
+      <button type="button" id="sizeUp" aria-label="Texte plus grand"><span class="size-a" style="font-size:20px">A</span></button>
     </div>
   </div>
-  <div class="ps__row">
-    <label>Texte</label>
-    <div class="ps__group">
-      <button class="ps__btn" data-fs="17">A−</button>
-      <button class="ps__btn is-active" data-fs="20">A</button>
-      <button class="ps__btn" data-fs="23">A+</button>
-      <button class="ps__btn" data-fs="26">A++</button>
-    </div>
-  </div>
-  <div class="ps__row">
-    <label>Interligne</label>
-    <div class="ps__group">
-      <button class="ps__btn" data-lh="1.5">Serré</button>
-      <button class="ps__btn is-active" data-lh="1.75">Normal</button>
-      <button class="ps__btn" data-lh="2">Aéré</button>
-    </div>
-  </div>
-  <div class="ps__row">
-    <label>Largeur</label>
-    <div class="ps__group">
-      <button class="ps__btn" data-mw="580">Étroite</button>
-      <button class="ps__btn is-active" data-mw="680">Standard</button>
-      <button class="ps__btn" data-mw="820">Large</button>
+  <div class="pop__row">
+    <div class="pop__label">Fond</div>
+    <div class="seg" id="themes">
+      <button type="button" class="sw-jour" data-theme="jour">Jour</button>
+      <button type="button" class="sw-sepia" data-theme="sepia">Sépia</button>
+      <button type="button" class="sw-nuit" data-theme="nuit">Nuit</button>
     </div>
   </div>
 </div>
 
-<!-- ==================== TOC DRAWER ==================== -->
-<div class="toc-backdrop" id="tocBackdrop"></div>
-<aside class="toc" id="toc" aria-label="Sommaire du livre">
-  <button class="toc__close" id="tocClose" aria-label="Fermer le sommaire">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
-  </button>
-  <div class="toc__title">Sommaire — avant-propos et 10 chapitres</div>
-  <ul class="toc__list" id="tocList"></ul>
-  <div class="toc__foot">
-    <a href="assets/metanoia-livre.pdf" download>↓ Télécharger le livre en PDF</a>
-    <a href="livre-audio.html">▷ Écouter le livre audio</a>
-  </div>
-</aside>
-
-<!-- ==================== READER ==================== -->
-<main class="reader" id="reader">
-  <div class="reader__meta">
-    <span>METANOIA · Yannis Gautier</span>
-    <span class="reader__phase" id="chapPhase">Mouvement I — Naître et grandir en Christ</span>
-    <span id="chapIdx">Chapitre 01 / 10</span>
-  </div>
-
-  <div class="reader__ornament" aria-hidden="true"></div>
-  <div class="reader__kicker" id="chapKicker">Chapitre 01</div>
-  <h1 class="reader__title" id="chapTitle">
-    Le matin <em>d’après.</em>
-  </h1>
-  <p class="reader__subtitle" id="chapSubtitle">
-    Recevoir la grâce et une identité nouvelle.
-  </p>
-
-
-  <article class="reader__body" id="chapBody">
-    <noscript><p>La liseuse a besoin de JavaScript. Le livre complet est disponible en <a href="assets/metanoia-livre.pdf">PDF</a>.</p></noscript>
+<!-- =================== TEXTE =================== -->
+<main class="read read-only" id="read">
+  <article class="page">
+    <header class="chap-head">
+      <div class="chap-head__mvt" id="chapMvt"></div>
+      <div class="chap-head__num" id="chapNum"></div>
+      <h1 class="chap-head__title" id="chapTitle"></h1>
+      <p class="chap-head__sub" id="chapSub"></p>
+      <div class="chap-head__orn" aria-hidden="true"></div>
+      <div class="chap-head__time" id="chapTime"></div>
+    </header>
+    <div class="text" id="chapText"></div>
+    <footer class="chap-end" id="chapEnd"></footer>
   </article>
-
-  <nav class="reader__footnav" aria-label="Navigation entre chapitres">
-    <a href="#" class="reader__nav-btn prev disabled" id="prevBtn">
-      <svg width="18" height="12" viewBox="0 0 22 12" fill="none"><path d="M21 6H1m0 0l5-5m-5 5l5 5" stroke="currentColor" stroke-width="1.5"/></svg>
-      <span class="lbl"><small>Précédent</small>—</span>
-    </a>
-    <a href="?c=01" class="reader__nav-btn next" id="nextBtn">
-      <span class="lbl"><small>Chapitre suivant</small>Le matin d’après.</span>
-      <svg width="18" height="12" viewBox="0 0 22 12" fill="none"><path d="M1 6h20m0 0L16 1m5 5l-5 5" stroke="currentColor" stroke-width="1.5"/></svg>
-    </a>
-  </nav>
 </main>
 
-<script>
-/* ============ Topbar scrolled state + reading progress ============ */
-const topbar = document.getElementById('topbar');
-const setScrolled = () => {
-  const y = window.scrollY;
-  topbar.classList.toggle('is-scrolled', y > 40);
-  const doc = document.documentElement;
-  const total = doc.scrollHeight - window.innerHeight;
-  const pg = total > 0 ? Math.min(100, Math.max(0, (y / total) * 100)) : 0;
-  topbar.style.setProperty('--pg', pg + '%');
-};
-window.addEventListener('scroll', setScrolled, { passive: true });
-setScrolled();
+<!-- =================== SOMMAIRE =================== -->
+<div class="toc-back" id="tocBack"></div>
+<nav class="toc" id="toc" aria-label="Sommaire du livre" aria-hidden="true">
+  <div class="toc__head">
+    <h2>Sommaire</h2>
+    <button class="bar__btn" type="button" id="tocClose" aria-label="Fermer le sommaire">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <ul class="toc__list" id="tocList"></ul>
+</nav>
 
-/* ============ TOC drawer ============ */
-const toc = document.getElementById('toc');
-const tocBtn = document.getElementById('tocBtn');
-const tocBackdrop = document.getElementById('tocBackdrop');
-const openToc = () => { toc.classList.add('is-open'); tocBackdrop.classList.add('is-open'); tocBtn.classList.add('is-active'); tocBtn.setAttribute('aria-expanded','true'); };
-const closeToc = () => { toc.classList.remove('is-open'); tocBackdrop.classList.remove('is-open'); tocBtn.classList.remove('is-active'); tocBtn.setAttribute('aria-expanded','false'); };
-tocBtn.addEventListener('click', () => toc.classList.contains('is-open') ? closeToc() : openToc());
-document.getElementById('tocClose').addEventListener('click', closeToc);
-tocBackdrop.addEventListener('click', closeToc);
-document.querySelectorAll('#tocList a').forEach(a => a.addEventListener('click', closeToc));
-
-/* ============ Settings panel ============ */
-const settings = document.getElementById('settingsPanel');
-const settingsBtn = document.getElementById('settingsBtn');
-settingsBtn.addEventListener('click', () => {
-  const open = settings.classList.toggle('is-open');
-  settingsBtn.classList.toggle('is-active', open);
-  settingsBtn.setAttribute('aria-expanded', String(open));
-});
-document.addEventListener('click', (e) => {
-  if (!settings.contains(e.target) && !settingsBtn.contains(e.target) && settings.classList.contains('is-open')) {
-    settings.classList.remove('is-open'); settingsBtn.classList.remove('is-active'); settingsBtn.setAttribute('aria-expanded','false');
-  }
-});
-
-/* Theme */
-document.querySelectorAll('[data-theme]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const t = btn.dataset.theme;
-    document.body.className = 'theme-' + t;
-    document.querySelectorAll('[data-theme]').forEach(b => b.classList.toggle('is-active', b === btn));
-  });
-});
-/* Font size */
-document.querySelectorAll('[data-fs]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.documentElement.style.setProperty('--reader-fs', btn.dataset.fs + 'px');
-    document.querySelectorAll('[data-fs]').forEach(b => b.classList.toggle('is-active', b === btn));
-  });
-});
-/* Line height */
-document.querySelectorAll('[data-lh]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.documentElement.style.setProperty('--reader-lh', btn.dataset.lh);
-    document.querySelectorAll('[data-lh]').forEach(b => b.classList.toggle('is-active', b === btn));
-  });
-});
-/* Max width */
-document.querySelectorAll('[data-mw]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.documentElement.style.setProperty('--reader-mw', btn.dataset.mw + 'px');
-    document.querySelectorAll('[data-mw]').forEach(b => b.classList.toggle('is-active', b === btn));
-  });
-});
-
-/* Clavier : Échap ferme les panneaux ; ← → changent de chapitre (voir le bloc « Le livre ») */
-document.addEventListener('keydown', (e) => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'Escape') { closeToc(); settings.classList.remove('is-open'); }
-});
-</script>
+<!-- =================== ÉCOUTE DU CHAPITRE =================== -->
+<div class="listen" id="listen" role="region" aria-label="Écoute du chapitre" hidden>
+  <div class="listen__prog" id="listenProg"><span id="listenFill"></span></div>
+  <button class="listen__play" type="button" id="listenPlay" aria-label="Lecture">
+    <svg class="icon" viewBox="0 0 24 24" fill="currentColor" id="listenIcon"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+  <div class="listen__info">
+    <div class="listen__k" id="listenK"></div>
+    <div class="listen__t" id="listenT"></div>
+  </div>
+  <div class="listen__time" id="listenTime">00:00 / 00:00</div>
+  <button class="listen__skip" type="button" id="listenBack" aria-label="Reculer de 15 secondes">−15</button>
+  <button class="listen__skip" type="button" id="listenClose" aria-label="Fermer l’écoute">
+    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  <audio id="listenAudio" preload="none"></audio>
+</div>
 
 <script src="data/chapitres.js"></script>
 <script>
-/* ============ Le livre : texte intégral issu du BAT (data/chapitres.js, ou .json) ============ */
 (() => {
-  const $ = (id) => document.getElementById(id);
-  const body = $('chapBody'), tocList = $('tocList'), prevBtn = $('prevBtn'), nextBtn = $('nextBtn');
-  const STORE = 'metanoia:reader';
-  const TAG = { p: 'p', h3: 'h3', h4: 'h4', quote: 'blockquote', impact: 'p', step: 'p', 'ex-title': 'p', 'ex-q': 'p', 'ex-a': 'p' };
-  let book = null, idx = 0, saveTimer = null;
+  const BOOK = window.METANOIA_BOOK;
+  if (!BOOK) { document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Le texte du livre n’a pas pu être chargé.</p>'; return; }
+  const CH = BOOK.chapters;
+  const $ = (s) => document.querySelector(s);
+  const $$ = (s) => [...document.querySelectorAll(s)];
 
-  const two = (n) => String(n).padStart(2, '0');
-  const save = () => {
-    if (!book) return;
-    try { localStorage.setItem(STORE, JSON.stringify({ chapter: book.chapters[idx].id, scrollY: Math.round(window.scrollY) })); } catch (e) {}
+  /* ---------- Mémoire de l'appareil (peut être indisponible en navigation privée) ---------- */
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   };
-  const restore = () => { try { return JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { return null; } };
-  const findIdx = (id) => book.chapters.findIndex(c => c.id === id);
-  /* saut direct, sans l'animation de scroll-behavior: smooth (repli pour les navigateurs anciens) */
-  const jump = (y) => {
-    try { window.scrollTo({ top: y || 0, left: 0, behavior: 'instant' }); }
-    catch (e) { window.scrollTo(0, y || 0); }
-  };
+  const KEY_POS = 'metanoia:lecture', KEY_PREF = 'metanoia:reglages';
+  const SIZES = [16, 17, 18, 19, 20, 22, 24];
+  const prefs = Object.assign({ size: window.innerWidth < 520 ? 2 : 3, theme: 'jour' }, store.get(KEY_PREF, {}));
 
-  /* Le HTML des blocs vient du convertisseur : texte échappé, seules <strong>, <em> et <br> sont produites */
-  const renderBlocks = (blocks) => blocks.map(b => {
-    const tag = TAG[b.t] || 'p';
-    return '<' + tag + (tag === 'p' && b.t !== 'p' ? ' class="' + b.t + '"' : '') + '>' + b.h + '</' + tag + '>';
-  }).join('\n');
-
-  const setNav = (el, c, label) => {
-    const lbl = el.querySelector('.lbl');
-    if (!c) { el.classList.add('disabled'); el.removeAttribute('href'); lbl.innerHTML = '<small>' + label + '</small>—'; return; }
-    el.classList.remove('disabled');
-    el.setAttribute('href', '?c=' + c.id);
-    lbl.innerHTML = '<small>' + label + '</small>' + c.title + '.';
+  const applyPrefs = () => {
+    prefs.size = Math.max(0, Math.min(SIZES.length - 1, prefs.size));
+    document.documentElement.dataset.theme = prefs.theme;
+    document.documentElement.style.setProperty('--fs', SIZES[prefs.size] + 'px');
+    $$('#themes button').forEach(b => b.classList.toggle('is-on', b.dataset.theme === prefs.theme));
+    $('#sizeDown').disabled = prefs.size === 0;
+    $('#sizeUp').disabled = prefs.size === SIZES.length - 1;
+    store.set(KEY_PREF, prefs);
   };
 
-  const render = (i, y) => {
-    idx = Math.max(0, Math.min(book.chapters.length - 1, i));
-    const c = book.chapters[idx];
-    $('chapKicker').textContent = c.label;
-    $('chapTitle').innerHTML = c.titleHtml;
-    const sub = $('chapSubtitle'); sub.textContent = c.subtitle || ''; sub.hidden = !c.subtitle;
-    $('chapPhase').textContent = c.movement ? 'Mouvement ' + c.movement + ' — ' + book.movements[c.movement] : 'Avant-propos';
-    $('chapIdx').textContent = c.num ? 'Chapitre ' + two(c.num) + ' / 10' : 'Ouverture du livre';
-    body.innerHTML = renderBlocks(c.blocks);
-    setNav(prevBtn, book.chapters[idx - 1], 'Précédent');
-    setNav(nextBtn, book.chapters[idx + 1], 'Chapitre suivant');
-    tocList.querySelectorAll('a').forEach((a, k) => a.classList.toggle('is-current', k === idx));
-    document.title = c.title + ' — METANOIA · Liseuse';
-    jump(y);
-    save();
+  /* ---------- Utilitaires ---------- */
+  const slug = (c) => c.id === 'ap' ? 'avant-propos' : 'chapitre-' + c.id;
+  const indexOfSlug = (s) => CH.findIndex(c => slug(c) === s);
+  const label = (c) => c.id === 'ap' ? 'Avant-propos' : 'Chapitre ' + c.num;
+  const strip = (h) => h.replace(/<[^>]+>/g, ' ');
+  const words = (c) => c.blocks.reduce((n, b) => n + strip(b.h).split(/\s+/).filter(Boolean).length, 0);
+  const minutes = (c) => Math.max(1, Math.round(words(c) / 220));
+  const fmt = (s) => { s = Math.max(0, Math.floor(s || 0)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+  const totalMin = Math.round(CH.reduce((n, c) => n + minutes(c), 0) / 15) * 15;
+  const totalTxt = Math.floor(totalMin / 60) + ' h' + (totalMin % 60 ? ' ' + String(totalMin % 60).padStart(2, '0') : '');
+
+  /* ---------- Rendu d'un chapitre ---------- */
+  const DOTS = /[.…]{6,}/g;
+  const blockHtml = (b, prev) => {
+    const h = b.h;
+    switch (b.t) {
+      case 'p': return '<p' + (prev && prev !== 'p' ? ' class="first"' : (!prev ? ' class="first"' : '')) + '>' + h + '</p>';
+      case 'h3': return '<h3>' + h + '</h3>';
+      case 'h4': return '<h4>' + h + '</h4>';
+      case 'impact': return '<p class="impact">' + h + '</p>';
+      case 'quote': return '<blockquote>' + h + '</blockquote>';
+      case 'step': return '<p class="step">' + h + '</p>';
+      case 'ex-title': return '<div class="exercice">' + h + '</div>';
+      case 'ex-q': return '<p class="ex-q">' + h + '</p>';
+      case 'ex-a': {
+        const plain = strip(h).trim();
+        if (/^[.…\s]+$/.test(plain)) return '<div class="ligne" aria-hidden="true"></div>';
+        if (DOTS.test(h)) { DOTS.lastIndex = 0; return '<p class="ex-a">' + h.replace(DOTS, '').trim() + ' <span class="ligne-inline" aria-hidden="true"></span></p>'; }
+        return '<p class="ex-a">' + h + '</p>';
+      }
+      default: return '<p>' + h + '</p>';
+    }
   };
 
-  const go = (i) => {
-    if (!book || i < 0 || i >= book.chapters.length) return;
-    try { history.pushState({ c: book.chapters[i].id }, '', '?c=' + book.chapters[i].id); } catch (e) {}
-    render(i, 0);
+  let cur = -1;
+  const render = (i) => {
+    cur = i;
+    const c = CH[i];
+    $('#chapMvt').textContent = c.movement ? 'Mouvement ' + c.movement + ' · ' + BOOK.movements[c.movement] : '';
+    $('#chapMvt').hidden = !c.movement;
+    $('#chapNum').textContent = label(c);
+    $('#chapTitle').textContent = c.title;
+    $('#chapSub').textContent = c.subtitle || '';
+    $('#chapSub').hidden = !c.subtitle;
+    $('#chapTime').textContent = 'Environ ' + minutes(c) + ' min de lecture';
+    let prev = null;
+    $('#chapText').innerHTML = c.blocks.map(b => { const out = blockHtml(b, prev); prev = b.t; return out; }).join('');
+
+    const next = CH[i + 1];
+    $('#chapEnd').innerHTML =
+      '<div class="chap-end__orn" aria-hidden="true">· · ·</div>' +
+      (next
+        ? '<button type="button" class="next" id="btnNext"><span class="next__k">Continuer · ' + label(next) + '</span><span class="next__t">' + next.title + '</span>' + (next.subtitle ? '<span class="next__s">' + next.subtitle + '</span>' : '') + '</button>'
+        : '<p style="font-family:var(--serif);font-size:20px;margin-bottom:18px">Fin du livre.</p><button type="button" class="next" id="btnNext"><span class="next__k">Revenir</span><span class="next__t">À la couverture</span></button>') +
+      '<div class="end-links"><button type="button" data-listen>Écouter ce chapitre</button><button type="button" data-open-toc>Sommaire</button><a href="livre-audio.html">Livre audio complet</a></div>';
+    $('#btnNext').addEventListener('click', () => { next ? go(i + 1) : showCover(); });
+    $$('#chapEnd [data-open-toc]').forEach(b => b.addEventListener('click', openToc));
+    $$('#chapEnd [data-listen]').forEach(b => b.addEventListener('click', () => listenTo(cur)));
+
+    $('#barWhere').innerHTML = '<b>' + label(c) + '</b> · ' + c.title;
+    document.title = c.title + ' — MÉTANOÏA · Liseuse';
+    $$('.toc__item').forEach(el => el.classList.toggle('is-current', +el.dataset.i === i));
   };
 
-  const buildToc = () => {
-    tocList.innerHTML = book.chapters.map((c, i) =>
-      '<li><a href="?c=' + c.id + '" data-i="' + i + '"><span class="n">' + two(c.num) + '</span><span class="t">' + c.title +
-      '.</span><span class="p">' + (c.movement ? 'Mouvement ' + c.movement : 'Avant-propos') + '</span></a></li>').join('');
+  /* ---------- Navigation : #avant-propos, #chapitre-03 ; sans ancre = couverture ---------- */
+  let restoring = null;
+  const go = (i, ratio) => {
+    restoring = ratio || 0;
+    const h = '#' + slug(CH[i]);
+    if (location.hash === h) route(); else location.hash = h;
   };
+  const showCover = () => { if (location.hash) history.pushState('', document.title, location.pathname + location.search); route(); };
 
-  tocList.addEventListener('click', (e) => {
-    const a = e.target.closest('a[data-i]'); if (!a) return;
-    e.preventDefault(); go(+a.dataset.i); closeToc();
-  });
-  prevBtn.addEventListener('click', (e) => { e.preventDefault(); go(idx - 1); });
-  nextBtn.addEventListener('click', (e) => { e.preventDefault(); go(idx + 1); });
-  document.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.altKey || e.ctrlKey || e.metaKey) return;
-    if (e.key === 'ArrowRight') go(idx + 1);
-    if (e.key === 'ArrowLeft') go(idx - 1);
-  });
-  window.addEventListener('popstate', () => {
-    const id = new URLSearchParams(location.search).get('c');
-    const i = id ? findIdx(id) : 0; render(i < 0 ? 0 : i, 0);
-  });
-  window.addEventListener('scroll', () => { clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }, { passive: true });
-  /* au moment où la page est quittée ou passe en arrière-plan (téléphone), la dernière position est sauvée */
-  window.addEventListener('pagehide', save);
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
-
-  (window.METANOIA_BOOK ? Promise.resolve(window.METANOIA_BOOK)
-    : fetch('data/chapitres.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }))
-    .then(d => {
-      book = d; buildToc();
-      const asked = new URLSearchParams(location.search).get('c');
-      const saved = restore();
-      if (asked && findIdx(asked) >= 0) render(findIdx(asked), 0);
-      else if (saved && findIdx(saved.chapter) >= 0) render(findIdx(saved.chapter), saved.scrollY || 0);
-      else render(0, 0);
-    })
-    .catch(() => {
-      body.innerHTML = '<p>Le texte n’a pas pu être chargé. Le livre complet est disponible en <a href="assets/metanoia-livre.pdf">PDF</a>.</p>';
+  const route = () => {
+    closeToc(); $('#pop').hidden = true;
+    const i = indexOfSlug(location.hash.slice(1));
+    if (i < 0) {
+      document.body.dataset.view = 'cover';
+      document.title = 'Liseuse — MÉTANOÏA · Yannis Gautier';
+      refreshResume();
+      window.scrollTo(0, 0);
+      return;
+    }
+    document.body.dataset.view = 'read';
+    if (i !== cur) render(i);
+    const r = restoring; restoring = null;
+    requestAnimationFrame(() => {
+      if (r) { const t = textBounds(); window.scrollTo(0, t.top + r * t.span); }
+      else window.scrollTo(0, 0);
+      onScroll();
     });
-})();
+  };
+  window.addEventListener('hashchange', route);
+  window.addEventListener('popstate', route);
 
-/* ============ Réglages de lecture mémorisés (thème, taille, interligne, largeur) ============ */
-(() => {
-  const K = 'metanoia:reader-prefs', keys = ['theme', 'fs', 'lh', 'mw'];
-  let prefs = {};
-  try { prefs = JSON.parse(localStorage.getItem(K) || '{}') || {}; } catch (e) {}
-  keys.forEach(k => { if (prefs[k]) { const b = document.querySelector('[data-' + k + '="' + prefs[k] + '"]'); if (b) b.click(); } });
-  document.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-theme],[data-fs],[data-lh],[data-mw]'); if (!b) return;
-    keys.forEach(k => { if (b.dataset[k]) prefs[k] = b.dataset[k]; });
-    try { localStorage.setItem(K, JSON.stringify(prefs)); } catch (e) {}
+  /* ---------- Reprise de lecture ---------- */
+  const refreshResume = () => {
+    const pos = store.get(KEY_POS, null);
+    const i = pos ? indexOfSlug(pos.chap) : -1;
+    const has = i >= 0 && (i > 0 || pos.ratio > 0.02);
+    $('#btnResume').hidden = !has;
+    $('#btnStart').textContent = has ? 'Commencer au début' : 'Commencer la lecture';
+    $('#btnStart').className = has ? 'btn btn--line' : 'btn btn--light';
+    if (has) $('#resumeWhere').textContent = label(CH[i]) + ' · ' + CH[i].title + ' · ' + Math.round(Math.min(1, pos.ratio) * 100) + ' %';
+  };
+  $('#btnStart').addEventListener('click', () => go(0, 0));
+  $('#btnResume').addEventListener('click', () => {
+    const pos = store.get(KEY_POS, null); const i = pos ? indexOfSlug(pos.chap) : 0;
+    go(Math.max(0, i), pos ? pos.ratio : 0);
   });
+  $('#btnCover').addEventListener('click', showCover);
+  $('#coverDesc').textContent = 'Avant-propos et dix chapitres, environ ' + totalTxt + ' de lecture. Lis à ton rythme : la page où tu t’arrêtes est gardée sur cet appareil.';
+
+  /* ---------- Défilement : progression, sauvegarde, barre qui se cache ---------- */
+  const textBounds = () => {
+    const page = $('.page'); const top = page.getBoundingClientRect().top + window.scrollY;
+    const span = Math.max(1, page.offsetHeight - window.innerHeight * 0.6);
+    return { top, span };
+  };
+  let lastY = 0, saveT = 0;
+  const onScroll = () => {
+    if (document.body.dataset.view !== 'read') return;
+    const y = window.scrollY;
+    const t = textBounds();
+    const ratio = Math.max(0, Math.min(1, (y - t.top) / t.span));
+    $('#barProg').style.width = (ratio * 100) + '%';
+    const bar = $('#bar');
+    if (y > lastY + 6 && y > 160 && $('#pop').hidden) bar.classList.add('is-hidden');
+    else if (y < lastY - 6 || y < 160) bar.classList.remove('is-hidden');
+    lastY = y;
+    const now = Date.now();
+    if (now - saveT > 800) { saveT = now; store.set(KEY_POS, { chap: slug(CH[cur]), ratio }); }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('pagehide', onScroll);
+
+  /* ---------- Sommaire ---------- */
+  const tocList = $('#tocList');
+  let lastMvt = undefined;
+  CH.forEach((c, i) => {
+    if (c.movement !== lastMvt && c.movement) {
+      const li = document.createElement('li');
+      li.className = 'toc__mvt';
+      li.innerHTML = 'Mouvement ' + c.movement + '<b>' + BOOK.movements[c.movement] + '</b>';
+      tocList.appendChild(li);
+    }
+    lastMvt = c.movement;
+    const li = document.createElement('li');
+    li.innerHTML = '<button type="button" class="toc__item" data-i="' + i + '">' +
+      '<span class="toc__n">' + (c.id === 'ap' ? '—' : c.num) + '</span>' +
+      '<span><span class="toc__t">' + c.title + '</span>' + (c.subtitle ? '<span class="toc__s">' + c.subtitle + '</span>' : '') + '</span>' +
+      '<span class="toc__m">' + minutes(c) + ' min</span></button>';
+    li.querySelector('button').addEventListener('click', () => go(i, 0));
+    tocList.appendChild(li);
+  });
+  const openToc = () => { $('#toc').classList.add('is-open'); $('#tocBack').classList.add('is-open'); $('#toc').setAttribute('aria-hidden', 'false'); };
+  const closeToc = () => { $('#toc').classList.remove('is-open'); $('#tocBack').classList.remove('is-open'); $('#toc').setAttribute('aria-hidden', 'true'); };
+  $$('[data-open-toc]').forEach(b => b.addEventListener('click', openToc));
+  $('#tocClose').addEventListener('click', closeToc);
+  $('#tocBack').addEventListener('click', closeToc);
+
+  /* ---------- Réglages ---------- */
+  $('#btnSettings').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const pop = $('#pop'); pop.hidden = !pop.hidden;
+    $('#btnSettings').setAttribute('aria-expanded', String(!pop.hidden));
+    $('#btnSettings').classList.toggle('is-on', !pop.hidden);
+  });
+  document.addEventListener('click', (e) => {
+    const pop = $('#pop');
+    if (!pop.hidden && !pop.contains(e.target) && e.target !== $('#btnSettings')) {
+      pop.hidden = true; $('#btnSettings').classList.remove('is-on'); $('#btnSettings').setAttribute('aria-expanded', 'false');
+    }
+  });
+  const keepPlace = (fn) => { const t = textBounds(); const r = (window.scrollY - t.top) / t.span; fn(); applyPrefs(); requestAnimationFrame(() => { const t2 = textBounds(); if (r > 0) window.scrollTo(0, t2.top + r * t2.span); }); };
+  $('#sizeDown').addEventListener('click', () => keepPlace(() => prefs.size--));
+  $('#sizeUp').addEventListener('click', () => keepPlace(() => prefs.size++));
+  $$('#themes button').forEach(b => b.addEventListener('click', () => { prefs.theme = b.dataset.theme; applyPrefs(); }));
+
+  /* ---------- Écouter ce chapitre ---------- */
+  const audio = $('#listenAudio');
+  let audioIdx = -1;
+  const PLAY = '<path d="M8 5v14l11-7z"/>', PAUSE = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
+  const audioIcon = () => {
+    const on = !audio.paused && !audio.ended;
+    $('#listenIcon').innerHTML = on ? PAUSE : PLAY;
+    $('#listenPlay').setAttribute('aria-label', on ? 'Pause' : 'Lecture');
+    $('#btnListen').classList.toggle('is-on', on);
+  };
+  const listenTo = (i) => {
+    const c = CH[i];
+    $('#listen').hidden = false; document.body.classList.add('is-listening');
+    if (audioIdx !== i) {
+      audioIdx = i;
+      audio.src = c.audio;
+      $('#listenK').textContent = label(c) + ' · lu par Nicolas Petit';
+      $('#listenT').textContent = c.title;
+    }
+    const p = audio.play(); if (p && p.catch) p.catch(audioIcon);
+  };
+  $('#btnListen').addEventListener('click', () => {
+    if (audioIdx === cur && !$('#listen').hidden) { audio.paused ? audio.play() : audio.pause(); }
+    else listenTo(cur);
+  });
+  $('#listenPlay').addEventListener('click', () => { audio.paused ? audio.play() : audio.pause(); });
+  $('#listenBack').addEventListener('click', () => { audio.currentTime = Math.max(0, audio.currentTime - 15); });
+  $('#listenClose').addEventListener('click', () => { audio.pause(); $('#listen').hidden = true; document.body.classList.remove('is-listening'); });
+  $('#listenProg').addEventListener('click', (e) => {
+    if (!audio.duration) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - r.left) / r.width) * audio.duration;
+  });
+  audio.addEventListener('timeupdate', () => {
+    const d = audio.duration || 0;
+    $('#listenFill').style.width = d ? (audio.currentTime / d * 100) + '%' : '0';
+    $('#listenTime').textContent = fmt(audio.currentTime) + ' / ' + fmt(d);
+  });
+  ['play', 'pause', 'ended'].forEach(ev => audio.addEventListener(ev, audioIcon));
+
+  /* ---------- Clavier ---------- */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { closeToc(); $('#pop').hidden = true; }
+    if (document.body.dataset.view !== 'read' || e.altKey || e.metaKey || e.ctrlKey) return;
+    if (e.key === 'ArrowRight' && cur < CH.length - 1) go(cur + 1, 0);
+    if (e.key === 'ArrowLeft' && cur > 0) go(cur - 1, 0);
+  });
+
+  applyPrefs();
+  route();
 })();
 </script>
 </body>
