@@ -350,31 +350,36 @@ button { font: inherit; cursor: pointer; border: 0; background: transparent; col
    MARQUEE — bande cyan pleine, mots-clés du parcours
    ============================================================= */
 .marquee {
-  background: var(--cyan);
-  color: var(--ink);
-  padding: 22px 0;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 16px 0;
   overflow: hidden;
   position: relative;
+  border-top: 1px solid var(--ink-line);
+  border-bottom: 1px solid var(--ink-line);
 }
 .marquee__track {
   display: flex;
-  gap: 44px;
+  width: max-content;
   white-space: nowrap;
-  animation: mv 50s linear infinite;
+  animation: mv 90s linear infinite;
   font-family: var(--display);
-  font-weight: 800;
-  font-size: 20px;
-  letter-spacing: 0.18em;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   align-items: center;
 }
-.marquee__track span { display: inline-flex; align-items: center; gap: 44px; }
+.marquee__track span { display: inline-flex; align-items: center; gap: 44px; padding-right: 44px; }
+.marquee__track i { font-style: normal; }
+.marquee__track b { font-family: var(--mono); font-weight: 500; color: var(--cyan); letter-spacing: .1em; margin-right: 12px; }
 .marquee__track .sep {
   display: inline-block;
-  width: 8px; height: 8px;
+  width: 5px; height: 5px;
   transform: rotate(45deg);
-  border: 1.5px solid var(--ink);
+  background: var(--grey);
 }
+.marquee:hover .marquee__track { animation-play-state: paused; }
 @keyframes mv { to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .marquee__track { animation: none; } }
 
@@ -1693,7 +1698,7 @@ button { font: inherit; cursor: pointer; border: 0; background: transparent; col
 .hero__image.has-photo::before { z-index: 1; background: linear-gradient(100deg, var(--ink) 0%, rgba(11,14,16,.30) 28%, transparent 55%), linear-gradient(0deg, rgba(11,14,16,.55) 0%, transparent 35%); }
 .yannis__portrait.has-photo::before { z-index: 1; background: linear-gradient(0deg, rgba(11,14,16,.78) 0%, transparent 45%); }
 .hero__image .slot-photo, .yannis__portrait .slot-photo { filter: grayscale(1) contrast(1.05); object-position: 50% 20%; }
-.book__3d.has-cover { aspect-ratio: 2 / 3; }
+.book__3d.has-cover { aspect-ratio: 1070 / 1470; }
 .book__face.has-photo { padding: 0; }
 .pdc__scene.has-photo::before { z-index: 1; background: linear-gradient(180deg, rgba(11,14,16,.55) 0%, transparent 30%); }
 .pdc__scene.has-photo .pdc__scene-tag, .pdc__scene.has-photo .pdc__scene-msg { z-index: 2; }
@@ -1766,22 +1771,32 @@ button { font: inherit; cursor: pointer; border: 0; background: transparent; col
   </div>
 </header>
 
-<!-- ==================== MARQUEE cyan ==================== -->
-<div class="marquee" aria-hidden="true">
+<!-- ==================== BANDEAU — titres des 10 chapitres ==================== -->
+<div class="marquee" aria-label="Les 10 chapitres du livre">
   <div class="marquee__track">
     <span>
-      Naître <span class="sep"></span>
-      Grandir <span class="sep"></span>
-      Se reconstruire <span class="sep"></span>
-      Rester libre <span class="sep"></span>
-      Naître <span class="sep"></span>
-      Grandir <span class="sep"></span>
-      Se reconstruire <span class="sep"></span>
-      Rester libre <span class="sep"></span>
-      Naître <span class="sep"></span>
-      Grandir <span class="sep"></span>
-      Se reconstruire <span class="sep"></span>
-      Rester libre <span class="sep"></span>
+      <i><b>01</b>Le matin d’après</i> <span class="sep"></span>
+      <i><b>02</b>Le combat intérieur</i> <span class="sep"></span>
+      <i><b>03</b>La grâce, pas la performance</i> <span class="sep"></span>
+      <i><b>04</b>Quand tes pensées te mentent</i> <span class="sep"></span>
+      <i><b>05</b>Quand tes émotions prennent le contrôle</i> <span class="sep"></span>
+      <i><b>06</b>Reconstruire les ruines</i> <span class="sep"></span>
+      <i><b>07</b>Préparer ta sortie</i> <span class="sep"></span>
+      <i><b>08</b>Le vertige de la liberté</i> <span class="sep"></span>
+      <i><b>09</b>Travail, argent et dignité</i> <span class="sep"></span>
+      <i><b>10</b>Rester libre</i> <span class="sep"></span>
+    </span>
+    <span aria-hidden="true">
+      <i><b>01</b>Le matin d’après</i> <span class="sep"></span>
+      <i><b>02</b>Le combat intérieur</i> <span class="sep"></span>
+      <i><b>03</b>La grâce, pas la performance</i> <span class="sep"></span>
+      <i><b>04</b>Quand tes pensées te mentent</i> <span class="sep"></span>
+      <i><b>05</b>Quand tes émotions prennent le contrôle</i> <span class="sep"></span>
+      <i><b>06</b>Reconstruire les ruines</i> <span class="sep"></span>
+      <i><b>07</b>Préparer ta sortie</i> <span class="sep"></span>
+      <i><b>08</b>Le vertige de la liberté</i> <span class="sep"></span>
+      <i><b>09</b>Travail, argent et dignité</i> <span class="sep"></span>
+      <i><b>10</b>Rester libre</i> <span class="sep"></span>
     </span>
   </div>
 </div>
@@ -1985,7 +2000,7 @@ button { font: inherit; cursor: pointer; border: 0; background: transparent; col
         <div class="book__3d has-cover">
           <div class="book__pages" aria-hidden="true"></div>
           <div class="book__face has-photo">
-            <img class="slot-photo" src="assets/img/metanoia-cover.jpg" alt="Couverture du livre MÉTANOÏA — De la cellule à la vraie liberté, de Yannis Gautier" width="1024" height="1536" loading="lazy" />
+            <img class="slot-photo" src="assets/img/metanoia-cover.jpg" alt="Couverture du livre MÉTANOÏA — De la cellule à la liberté, de Yannis Gautier" width="1070" height="1470" loading="lazy" />
           </div>
         </div>
       </div>

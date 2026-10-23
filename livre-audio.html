@@ -2176,8 +2176,33 @@ button { font: inherit; cursor: pointer; border: 0; background: transparent; col
 <style>
 /* === Photos et couverture réelles (fichiers dans assets/img/) === */
 .slot-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 0; }
-.bigplayer__cover.has-photo { padding: 0; aspect-ratio: 2 / 3; }
+.bigplayer__cover.has-photo { padding: 0; aspect-ratio: 1070 / 1470; }
 .bigplayer__cover.has-photo::before { display: none; }
+
+/* === Barre de lecture fixe en bas d'écran : pause toujours à portée de main === */
+.minibar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px;
+  padding: 12px clamp(14px, 4vw, 40px) calc(12px + env(safe-area-inset-bottom));
+  background: rgba(11,14,16,.96); color: var(--paper);
+  border-top: 1px solid var(--ink-line);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+}
+.minibar[hidden] { display: none; }
+.minibar__play {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--cyan); color: var(--ink);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.minibar__play svg { width: 22px; height: 22px; }
+.minibar__info { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.minibar__label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--cyan); }
+.minibar__title { font-family: var(--display); font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.minibar__time { font-family: var(--mono); font-size: 12px; color: var(--grey-2); font-variant-numeric: tabular-nums; }
+.minibar__progress { position: absolute; left: 0; right: 0; top: -1px; height: 4px; background: var(--ink-line); cursor: pointer; }
+.minibar__progress span { display: block; height: 100%; width: 0; background: var(--cyan); }
+body.has-minibar { padding-bottom: 92px; }
+@media (max-width: 560px) { .minibar__time { display: none; } }
 </style>
 </head>
 <body>
@@ -2232,7 +2257,7 @@ button { font: inherit; cursor: pointer; border: 0; background: transparent; col
 <section class="bigplayer theme-dark">
   <div class="bigplayer__inner">
     <div class="bigplayer__cover has-photo">
-      <img class="slot-photo" src="assets/img/metanoia-cover.jpg" alt="Couverture du livre MÉTANOÏA — De la cellule à la vraie liberté" width="1024" height="1536" />
+      <img class="slot-photo" src="assets/img/metanoia-cover.jpg" alt="Couverture du livre MÉTANOÏA — De la cellule à la liberté" width="1070" height="1470" />
     </div>
 
     <div class="bigplayer__panel">
@@ -2536,6 +2561,18 @@ button { font: inherit; cursor: pointer; border: 0; background: transparent; col
   </div>
 </footer>
 
+<div class="minibar" id="miniBar" hidden role="region" aria-label="Lecture en cours">
+  <div class="minibar__progress" id="miniProgress"><span id="miniFill"></span></div>
+  <button class="minibar__play" id="miniPlay" aria-label="Lecture">
+    <svg viewBox="0 0 24 24" fill="currentColor" id="miniIcon"><path d="M8 5v14l11-7z"/></svg>
+  </button>
+  <div class="minibar__info">
+    <span class="minibar__label" id="miniLabel"></span>
+    <span class="minibar__title" id="miniTitle"></span>
+  </div>
+  <div class="minibar__time" id="miniTime">00:00 / 00:00</div>
+</div>
+
 <script>
 const nav = document.getElementById('nav');
 document.getElementById('burger').addEventListener('click', () => nav.classList.toggle('is-open'));
@@ -2560,6 +2597,16 @@ document.getElementById('year').textContent = new Date().getFullYear();
   const titleEl = document.getElementById('bpTitle');
   const excerptEl = document.getElementById('bpExcerpt');
   const dlChap = document.getElementById('bpDlChap');
+  const miniBar = document.getElementById('miniBar');
+  const miniPlay = document.getElementById('miniPlay');
+  const miniIcon = document.getElementById('miniIcon');
+  const miniLabel = document.getElementById('miniLabel');
+  const miniTitle = document.getElementById('miniTitle');
+  const miniTime = document.getElementById('miniTime');
+  const miniFill = document.getElementById('miniFill');
+  const miniProgress = document.getElementById('miniProgress');
+  const PLAY_PATH = '<path d="M8 5v14l11-7z"/>';
+  const PAUSE_PATH = '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>';
   const STORE = 'metanoia:audio';
 
   let idx = 0;
@@ -2610,14 +2657,23 @@ document.getElementById('year').textContent = new Date().getFullYear();
     totEl.textContent = fmt(duration);
     totTopEl.textContent = rows[idx].dataset.short + ' · ' + fmt(duration);
     wave.setAttribute('aria-valuenow', String(Math.round(ratio * 100)));
+    miniTime.textContent = fmt(current) + ' / ' + fmt(duration);
+    miniFill.style.width = (ratio * 100) + '%';
   };
 
+  /* Un seul état « lecture / pause », affiché partout : grand lecteur, ligne du chapitre, barre du bas */
   const updateIcon = () => {
     const playing = !audio.paused && !audio.ended;
-    playIcon.innerHTML = playing
-      ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
-      : '<path d="M8 5v14l11-7z"/>';
+    playIcon.innerHTML = playing ? PAUSE_PATH : PLAY_PATH;
     playBtn.setAttribute('aria-label', playing ? 'Pause' : 'Lecture');
+    miniIcon.innerHTML = playing ? PAUSE_PATH : PLAY_PATH;
+    miniPlay.setAttribute('aria-label', playing ? 'Pause' : 'Lecture');
+    rows.forEach((r, i) => {
+      const btn = r.querySelector('.chap-row__play');
+      const on = playing && i === idx;
+      btn.querySelector('svg').innerHTML = on ? PAUSE_PATH : PLAY_PATH;
+      btn.setAttribute('aria-label', on ? 'Mettre en pause' : 'Lire ce chapitre');
+    });
   };
 
   const loadChapter = (i, startAt) => {
@@ -2632,6 +2688,8 @@ document.getElementById('year').textContent = new Date().getFullYear();
     excerptEl.textContent = row.dataset.quote || '';
     excerptEl.hidden = !row.dataset.quote;
     if (dlChap) dlChap.href = row.dataset.src;
+    miniLabel.textContent = row.dataset.label;
+    miniTitle.textContent = row.dataset.title;
     rows.forEach(r => r.classList.toggle('is-playing', r === row));
     buildWave();
     render();
@@ -2661,7 +2719,11 @@ document.getElementById('year').textContent = new Date().getFullYear();
     const now = Date.now();
     if (now - lastSave > 5000) { lastSave = now; save(); }
   });
-  audio.addEventListener('play', updateIcon);
+  audio.addEventListener('play', () => {
+    updateIcon();
+    miniBar.hidden = false;
+    document.body.classList.add('has-minibar');
+  });
   audio.addEventListener('pause', () => { updateIcon(); save(); });
   audio.addEventListener('ended', () => {
     updateIcon();
@@ -2692,7 +2754,18 @@ document.getElementById('year').textContent = new Date().getFullYear();
     audio.playbackRate = speed;
   }));
 
-  rows.forEach((row, i) => row.addEventListener('click', () => { loadChapter(i); play(); }));
+  /* Cliquer le chapitre en cours le met en pause ou le relance là où il en était ; un autre chapitre démarre */
+  rows.forEach((row, i) => row.addEventListener('click', () => {
+    if (i === idx) { togglePlay(); return; }
+    loadChapter(i);
+    play();
+  }));
+
+  miniPlay.addEventListener('click', togglePlay);
+  miniProgress.addEventListener('click', (e) => {
+    const r = miniProgress.getBoundingClientRect();
+    seekTo(((e.clientX - r.left) / r.width) * duration);
+  });
 
   const setVol = () => { audio.volume = Math.max(0, Math.min(1, (parseFloat(volEl.value) || 0) / 100)); };
   volEl.addEventListener('input', setVol);
